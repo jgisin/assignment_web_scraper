@@ -9,11 +9,12 @@ class WebScraper
   def initialize
   # Instantiate a new Mechanize
     @agent = Mechanize.new
-    @home_page = @agent.get('http://dice.com/')
+    @agent.http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+    @home_page = @agent.get('http://www.dice.com/')
     #binding.pry
     @search_form = @home_page.form_with(:action => "/jobs")
     @search_query = nil
-    @search_result = nil
+    @company_result = nil
   end
 
 

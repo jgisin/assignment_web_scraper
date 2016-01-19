@@ -11,14 +11,12 @@ class WebScraper
   def initialize
   # Instantiate a new Mechanize
     @agent = Mechanize.new
-    # @agent.http.verify_mode = OpenSSL::SSL::VERIFY_NONE
     @home_page = @agent.get('http://www.dice.com/')
     @search_link = nil
-    #binding.pry
     @search_form = @home_page.form_with(:action => "/jobs")
     @search_query = nil
     unless search_query.nil?
-      @job_click = @search_query.search("//div[@class='serp-result-content']")[0]
+      @job_click = @search_query.search('div.serp-result-content')[0]
     end
     @job_list = []
   end
@@ -31,39 +29,43 @@ class WebScraper
   end
 
   def job_link(num)
-    @search_link = @search_query.search("//div[@class='serp-result-content']")[num].children[1].children[1].attributes["href"].value
-    @search_objects = @agent.get(@search_query.search("//div[@class='serp-result-content']")[num].children[1].children[1].attributes["href"].value)
+    @search_link = @search_query.search('div.serp-result-content')[num].children[1].children[1].attributes["href"].value
+    @search_objects = @agent.get(@search_query.search('div.serp-result-content')[num].children[1].children[1].attributes["href"].value)
   end
 
   def job_name
-    @search_object.search("//h1[@class='jobTitle']").text
+    @search_object.search('h1.jobTitle').text
   end
 
   def employer
-    @search_object.search("//li[@class='employer']").children[1].text
+    begin
+      @search_object.search('li.employer').children[1].text
+    rescue
+      "n/a"
+    end
   end
 
   def get_id
     id_array = []
     begin
-      id_array << @search_object.search("//div[@class='company-header-info']").children[5].children[1].text
-      id_array << @search_object.search("//div[@class='company-header-info']").children[3].children[1].text
+      id_array << @search_object.search('div.company-header-info').children[5].children[1].text
+      id_array << @search_object.search('div.company-header-info').children[3].children[1].text
     rescue
-      id_array << @search_object.search("//div[@class='company-header-info']").children[3].children[1].text
-      id_array << @search_object.search("//div[@class='company-header-info']").children[1].children[1].text
+      id_array << @search_object.search('div.company-header-info').children[3].children[1].text
+      id_array << @search_object.search('div.company-header-info').children[1].children[1].text
     end
   end
 
   def company_id
-    @search_object.search("//div[@class='company-header-info']").children[3].children[1].text
+    @search_object.search('div.company-header-info').children[3].children[1].text
   end
 
   def location
-    @search_object.search("//li[@class='location']").text
+    @search_object.search('li.location').text
   end
 
   def date
-    @search_object.search("//li[@class='posted hidden-xs']").text
+    @search_object.search('li.posted hidden-xs').text
   end
 
   def iterate
@@ -76,11 +78,7 @@ class WebScraper
   end
 
   def to_csv
-# the 'a' is important
-# it turns on Append Mode so you don't overwrite
-# your own scrape file
     CSV.open('csv_file.csv', 'a') do |csv|
-    # each one of these comes out in its own row.
       @job_list.each do |job|
         csv << [job.title, job.company, job.company_id, job.job_id, job.location, job.link, job.date]
       end
@@ -110,7 +108,7 @@ class WebScraper
 end
 
 web = WebScraper.new
-web.search("web", "aurora")
+web.search("web", "new york")
 
 web.iterate
 print web.job_list
@@ -118,11 +116,11 @@ web.to_csv
 
 # #Job Name
 # web.search_link = web.agent.get(web.job_link(5))
-# p web.search_link.search("//h1[@class='jobTitle']").text
+# p web.search_link.search('h1.jobTitle').text
 
-# #Employer
-# web.search_link = web.agent.get(web.job_link(1))
-# p web.search_link.search("//li[@class='employer']").children[1].text
+#Employer
+# web.search_link = web.agent.get(web.job_link(4))
+# p web.search_link.search('li.employer').children[1].text
 
 # #Location
 # web.search_link = web.agent.get(web.job_link(1))
